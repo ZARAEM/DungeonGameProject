@@ -4,8 +4,8 @@
 #include "Map.h"
 #include "glm/glm.hpp"
 #include "ShaderProgram.h"
-enum EntityType { PLATFORM, PLAYER, ENEMY };
-enum AIType { WALKER, GUARD };
+enum EntityType { PLATFORM, PLAYER, ENEMY, CHEST };
+enum AIType { WALKER, GUARD, CHESTAI };
 enum AIState { WALKING, IDLE, ATTACKING };
 
 enum AnimationDirection { LEFT, RIGHT, UP, DOWN };
@@ -93,10 +93,10 @@ public:
     void face_up() { m_animation_indices = m_walking[UP]; }
     void face_down() { m_animation_indices = m_walking[DOWN]; }
 
-    void move_left() { m_movement.x = -1.0f; }
-    void move_right() { m_movement.x = 5.0f; }
-    void move_up() { m_movement.y = 1.0f; }
-    void move_down() { m_movement.y = -1.0f; }
+    void move_left() { m_movement.x = -1.0f; face_left(); }
+    void move_right() { m_movement.x = 1.0f;  face_right(); }
+    void move_up() { m_movement.y = 1.0f;  face_up(); }
+    void move_down() { m_movement.y = -1.0f; face_down(); }
 
     void const jump() { m_is_jumping = true; }
 

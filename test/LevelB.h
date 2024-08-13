@@ -3,6 +3,7 @@
 class LevelB : public Scene {
 private:
     int ENEMY_COUNT = 5;
+    int CHEST_COUNT = 1;
 public:
 
     ~LevelB();

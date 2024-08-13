@@ -33,20 +33,20 @@ void Entity::ai_activate(Entity* player)
 void Entity::ai_walk()
 {
     const float top = -1.0f;
-    const float bottom = -6.5f;
+    const float bottom = -5.0f;
 
     if (m_position.y >= top) {
-        m_movement = glm::vec3(0.0f, -1.0f, 0.0f);
+        move_down();
     }
     else if (m_position.y <= bottom) {
-        m_movement = glm::vec3(0.0f, 1.0f, 0.0f);
+        move_up();
     }
     else {
         if (m_movement.y > 0) {
-            m_movement = glm::vec3(0.0f, 1.0f, 0.0f);
+            move_up();
         }
         else {
-            m_movement = glm::vec3(0.0f, -1.0f, 0.0f);
+            move_down();
         }
     }
 }
@@ -111,10 +111,17 @@ Entity::Entity(GLuint texture_id, float speed, glm::vec3 acceleration, float jum
     m_animation_frames(animation_frames), m_animation_index(animation_index),
     m_animation_rows(animation_rows), m_animation_indices(nullptr),
     m_animation_time(animation_time), m_texture_id(texture_id), m_velocity(0.0f),
-    m_width(width), m_height(height), m_entity_type(EntityType)
+    m_width(width), m_height(height), m_entity_type(EntityType), m_is_jumping(false)
 {
-    face_right();
-    set_walking(walking);
+    if (EntityType == ENEMY) {
+        face_down();
+        set_walking(walking);
+    }
+
+    if (EntityType == CHEST) {
+        face_up();
+        set_walking(walking);
+    }
 }
 
 // Simpler constructor for partial initialization
@@ -361,20 +368,20 @@ void Entity::update(float delta_time, Entity* player, Entity* collidable_entitie
     m_velocity.y = m_movement.y * m_speed;
     m_velocity += m_acceleration * delta_time;
 
-    //if (m_is_jumping)
-    //{
-    //    m_is_jumping = false;
-    //    m_velocity.y += m_jumping_power;
-    //}
+    if (m_is_jumping)
+    {
+        m_is_jumping = false;
+        m_velocity.y += m_jumping_power;
+    }
 
-    //check_collision_y(collidable_entities, collidable_entity_count);
-    //check_collision_y(map);
+    check_collision_y(collidable_entities, collidable_entity_count);
+    check_collision_y(map);
 
     m_position.x += m_velocity.x * delta_time;
     m_position.y += m_velocity.y * delta_time;
 
-    //check_collision_x(collidable_entities, collidable_entity_count);
-    //check_collision_x(map);
+    check_collision_x(collidable_entities, collidable_entity_count);
+    check_collision_x(map);
 
     m_model_matrix = glm::mat4(1.0f);
     m_model_matrix = glm::translate(m_model_matrix, m_position);

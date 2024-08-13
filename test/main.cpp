@@ -133,12 +133,12 @@ void initialise()
     
     g_levels[0] = mainmenu;
     g_levels[1] = levela;
-    g_levels[2] = betweenscreen;
+    g_levels[2] = levelb;
     g_levels[3] = levelb;
 
     Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
 
-    switch_to_scene(betweenscreen);
+    switch_to_scene(levela);
 
     g_effects = new Effects(g_projection_matrix, g_view_matrix);
 }

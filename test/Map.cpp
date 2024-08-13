@@ -11,10 +11,16 @@ void Map::build()
     // Since this is a 2D map, we need a nested for-loop
     for(int y_coord = 0; y_coord < m_height; y_coord++)
     {
+        int tile;
+
         for(int x_coord = 0; x_coord < m_width; x_coord++)
         {
-            // Get the current tile
-            int tile = m_level_data[y_coord * m_width + x_coord];
+            if (m_level_data[y_coord * m_width + x_coord] == 1) {
+                tile = 1;
+            }
+            else {
+                tile = m_level_data[y_coord * m_width + x_coord] - 1;
+            }
             
             // If the tile number is 0 i.e. not solid, skip to the next one
             if (tile == 0) continue;
@@ -53,7 +59,7 @@ void Map::build()
     
     // The bounds are dependent on the size of the tiles
     m_left_bound   = 0 - (m_tile_size / 2);
-    m_right_bound  = (m_tile_size * m_width) - (m_tile_size / 2);
+    m_right_bound  = (m_tile_size * m_width) - (m_tile_size / 2) + 1.0f;
     m_top_bound    = 0 + (m_tile_size / 2);
     m_bottom_bound = -(m_tile_size * m_height) + (m_tile_size / 2);
 }
@@ -88,8 +94,9 @@ bool Map::is_solid(glm::vec3 position, float *penetration_x, float *penetration_
     *penetration_y = 0;
     
     // If we are out of bounds, it is not solid
-    if (position.x < m_left_bound || position.x > m_right_bound)  return false;
-    if (position.y > m_top_bound  || position.y < m_bottom_bound) return false;
+    if (position.x < m_left_bound || position.x > m_right_bound || position.y > m_top_bound || position.y < m_bottom_bound) {
+        return false;
+    }
     
     int tile_x = floor((position.x + (m_tile_size / 2))  / m_tile_size);
     int tile_y = -(ceil(position.y - (m_tile_size / 2))) / m_tile_size; // Our array counts up as Y goes down.
@@ -99,8 +106,9 @@ bool Map::is_solid(glm::vec3 position, float *penetration_x, float *penetration_
     if (tile_y < 0 || tile_y >= m_height) return false;
     
     // If the tile index is 0 i.e. an open space, it is not solid
+    // add non solid here
     int tile = m_level_data[tile_y * m_width + tile_x];
-    if (tile == 0) return false;
+    if (tile == 0 || tile == 7 || tile == 8 || tile == 9 || tile == 10 || tile == 40) return false;
     
     // And we likely have some overlap
     float tile_center_x = (tile_x  * m_tile_size);
@@ -109,6 +117,22 @@ bool Map::is_solid(glm::vec3 position, float *penetration_x, float *penetration_
     // And because we likely have some overlap, we adjust for that
     *penetration_x = (m_tile_size / 2) - fabs(position.x - tile_center_x);
     *penetration_y = (m_tile_size / 2) - fabs(position.y - tile_center_y);
-    
-    return true;
+
+    if (position.x < m_left_bound + m_tile_size) {
+        *penetration_x = m_left_bound + m_tile_size - position.x;
+        return true;
+    }
+    if (position.x > m_right_bound - m_tile_size) {
+        *penetration_x = position.x - (m_right_bound - m_tile_size);
+        return true;
+    }
+    if (position.y > m_top_bound - m_tile_size) {
+        *penetration_y = position.y - (m_top_bound - m_tile_size);
+        return true;
+    }
+    if (position.y < m_bottom_bound + m_tile_size) {
+        *penetration_y = (m_bottom_bound + m_tile_size) - position.y;
+        return true;
+    }
+    return false;
 }

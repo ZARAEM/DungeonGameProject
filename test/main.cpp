@@ -36,14 +36,15 @@
 #include "LevelB.h"
 #include "Effects.h"
 #include "Menu.h"
+#include "BetweenScreen.h"
 
 // ––––– CONSTANTS ––––– //
 constexpr int WINDOW_WIDTH  = 640 * 2,
           WINDOW_HEIGHT = 480 * 2;
 
-constexpr float BG_RED     = 37/256.0,
-            BG_BLUE    = 150/256.0,
-            BG_GREEN   = 190/256.0,
+constexpr float BG_RED     = 40/256.0,
+            BG_BLUE    = 20/256.0,
+            BG_GREEN   = 28/256.0,
             BG_OPACITY = 1.0f;
 
 constexpr int VIEWPORT_X = 0,
@@ -62,6 +63,7 @@ enum AppStatus { RUNNING, TERMINATED };
 Scene  *g_current_scene;
 Menu *mainmenu;
 LevelA* levela;
+BetweenScreen* betweenscreen;
 LevelB* levelb;
 
 Effects *g_effects;
@@ -131,9 +133,12 @@ void initialise()
     
     g_levels[0] = mainmenu;
     g_levels[1] = levela;
-    g_levels[2] = levelb;
+    g_levels[2] = betweenscreen;
+    g_levels[3] = levelb;
 
-    switch_to_scene(levelb);
+    Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
+
+    switch_to_scene(betweenscreen);
 
     g_effects = new Effects(g_projection_matrix, g_view_matrix);
 }
@@ -214,16 +219,15 @@ void update()
         g_current_scene->update(FIXED_TIMESTEP);
         g_effects->update(FIXED_TIMESTEP);
         
-        //if (g_is_colliding_bottom == false && g_current_scene->get_state().player->get_collided_bottom()) g_effects->start(SHAKE, 1.0f);
+        if (g_is_colliding_bottom == false && g_current_scene->get_state().player->get_collided_bottom()) g_effects->start(SHAKE, 1.0f);
         
-        //g_is_colliding_bottom = g_current_scene->get_state().player->get_collided_bottom();
+        g_is_colliding_bottom = g_current_scene->get_state().player->get_collided_bottom();
         
         delta_time -= FIXED_TIMESTEP;
     }
     
     g_accumulator = delta_time;
     
-    // Prevent the camera from showing anything outside of the "edge" of the level
     g_view_matrix = glm::mat4(1.0f);
     
     if (g_current_scene->get_state().player->get_position().x > LEVEL1_LEFT_EDGE) {
@@ -254,6 +258,7 @@ void shutdown()
     
     delete mainmenu;
     delete levela;
+    delete betweenscreen;
     delete levelb;
     delete g_effects;
 }
@@ -268,7 +273,10 @@ int main(int argc, char* argv[])
         process_input();
         update();
         
-        if (g_current_scene->get_state().next_scene_id >= 0) switch_to_scene(g_levels[g_current_scene->get_state().next_scene_id]);
+        if (g_current_scene->get_state().next_scene_id >= 0) {
+            g_effects->start(FADEIN, 1.0f);
+            switch_to_scene(g_levels[g_current_scene->get_state().next_scene_id]);
+        }
         
         render();
     }

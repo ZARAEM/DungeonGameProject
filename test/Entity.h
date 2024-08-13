@@ -94,7 +94,7 @@ public:
     void face_down() { m_animation_indices = m_walking[DOWN]; }
 
     void move_left() { m_movement.x = -1.0f; }
-    void move_right() { m_movement.x = 1.0f; }
+    void move_right() { m_movement.x = 5.0f; }
     void move_up() { m_movement.y = 1.0f; }
     void move_down() { m_movement.y = -1.0f; }
 

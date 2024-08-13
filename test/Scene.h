@@ -15,7 +15,6 @@
 #include "Utility.h"
 #include "Entity.h"
 #include "Map.h"
-#include "Player.h"
 
 /**
     Notice that the game's state is now part of the Scene class, not the main file.

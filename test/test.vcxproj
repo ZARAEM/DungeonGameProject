@@ -131,6 +131,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BetweenScreen.cpp" />
     <ClCompile Include="Effects.cpp" />
     <ClCompile Include="Entity.cpp" />
     <ClCompile Include="helper.cpp" />
@@ -144,6 +145,7 @@
     <ClCompile Include="Utility.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BetweenScreen.h" />
     <ClInclude Include="Effects.h" />
     <ClInclude Include="Entity.h" />
     <ClInclude Include="LevelA.h" />

@@ -14,6 +14,5 @@ void Menu::update(float delta_time) {}
 void Menu::render(ShaderProgram* program) {
 	GLuint texture_id = Utility::load_texture("assets/font1.png");
 
-	//position of text
 	Utility::draw_text(program, texture_id, "Press Enter to Start", 0.4f, 0.0f, glm::vec3(1.0f, -3.0f, 0.0f));
 }

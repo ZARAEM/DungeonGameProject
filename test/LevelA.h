@@ -1,8 +1,9 @@
 #include "Scene.h"
 
 class LevelA : public Scene {
-public:
+private:
     int ENEMY_COUNT = 3;
+public:
     
     ~LevelA();
     

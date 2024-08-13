@@ -1,3 +1,13 @@
+/**
+* Author: Mearaj Ahmed
+* Assignment: Make it out the Dungeon ?
+* Date due: 2024-08-15, 1:00pm
+* I pledge that I have completed this assignment without
+* collaborating with anyone else, in conformance with the
+* NYU School of Engineering Policies and Procedures on
+* Academic Misconduct.
+**/
+
 #define GL_SILENCE_DEPRECATION
 #define GL_GLEXT_PROTOTYPES 1
 #define FIXED_TIMESTEP 0.0166666f
@@ -31,9 +41,9 @@
 constexpr int WINDOW_WIDTH  = 640 * 2,
           WINDOW_HEIGHT = 480 * 2;
 
-constexpr float BG_RED     = 0.1922f,
-            BG_BLUE    = 0.549f,
-            BG_GREEN   = 0.9059f,
+constexpr float BG_RED     = 37/256.0,
+            BG_BLUE    = 150/256.0,
+            BG_GREEN   = 190/256.0,
             BG_OPACITY = 1.0f;
 
 constexpr int VIEWPORT_X = 0,
@@ -52,13 +62,12 @@ enum AppStatus { RUNNING, TERMINATED };
 Scene  *g_current_scene;
 Menu *mainmenu;
 LevelA* levela;
-LevelB *g_levelB;
+LevelB* levelb;
 
-//Effects *g_effects;
-Scene   *g_levels[2];
+Effects *g_effects;
+Scene   *g_levels[4];
 
 SDL_Window* g_display_window;
-
 
 ShaderProgram g_shader_program;
 glm::mat4 g_view_matrix, g_projection_matrix;
@@ -87,7 +96,7 @@ void switch_to_scene(Scene *scene)
 void initialise()
 {
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
-    g_display_window = SDL_CreateWindow("TO BE NAMED ?",
+    g_display_window = SDL_CreateWindow("MAKE IT OUT THE DUNGEON ?",
                                       SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                       WINDOW_WIDTH, WINDOW_HEIGHT,
                                       SDL_WINDOW_OPENGL);
@@ -118,12 +127,15 @@ void initialise()
 
     mainmenu = new Menu();
     levela = new LevelA();
-    g_levelB = new LevelB();
+    levelb = new LevelB();
     
     g_levels[0] = mainmenu;
     g_levels[1] = levela;
+    g_levels[2] = levelb;
 
-    switch_to_scene(levela);
+    switch_to_scene(levelb);
+
+    g_effects = new Effects(g_projection_matrix, g_view_matrix);
 }
 
 void process_input()
@@ -143,11 +155,14 @@ void process_input()
                 
             case SDL_KEYDOWN:
                 switch (event.key.keysym.sym) {
+                case SDLK_q:
+                    g_app_status = TERMINATED;
+                    break;
                 case SDLK_w:
                     break;
-                case SDLK_s:
-                    break;
                 case SDLK_a:
+                    break;
+                case SDLK_s:
                     break;
                 case SDLK_d:
                     break;
@@ -161,25 +176,21 @@ void process_input()
 
     if (g_current_scene == g_levels[0]) {
         if (key_state[SDL_SCANCODE_RETURN]) {
-            g_current_scene = g_levels[1];
+            switch_to_scene(levela);
         }
     }
     
-    if (g_current_scene == g_levels[1]) {
+    if (g_current_scene == levela || g_current_scene == levelb) {
         if (key_state[SDL_SCANCODE_W]) {
-            std::cout << "W";
             g_current_scene->get_state().player->move_up();
         }
         else if (key_state[SDL_SCANCODE_A]) {
-            std::cout << "A";
             g_current_scene->get_state().player->move_left();
         }
         else if (key_state[SDL_SCANCODE_S]) {
-            std::cout << "S";
             g_current_scene->get_state().player->move_down();
         }
         else if (key_state[SDL_SCANCODE_D]) {
-            std::cout << "D";
             g_current_scene->get_state().player->move_right();
         }
     }
@@ -201,7 +212,7 @@ void update()
     
     while (delta_time >= FIXED_TIMESTEP) {
         g_current_scene->update(FIXED_TIMESTEP);
-        //g_effects->update(FIXED_TIMESTEP);
+        g_effects->update(FIXED_TIMESTEP);
         
         //if (g_is_colliding_bottom == false && g_current_scene->get_state().player->get_collided_bottom()) g_effects->start(SHAKE, 1.0f);
         
@@ -220,8 +231,7 @@ void update()
     } else {
         g_view_matrix = glm::translate(g_view_matrix, glm::vec3(-5, 3.75, 0));
     }
-    //
-    //g_view_matrix = glm::translate(g_view_matrix, g_effects->get_view_offset());
+    g_view_matrix = glm::translate(g_view_matrix, g_effects->get_view_offset());
 }
 
 void render()
@@ -233,7 +243,7 @@ void render()
     // ————— RENDERING THE SCENE (i.e. map, character, enemies...) ————— //
     g_current_scene->render(&g_shader_program);
        
-    //g_effects->render();
+    g_effects->render();
     
     SDL_GL_SwapWindow(g_display_window);
 }
@@ -243,8 +253,9 @@ void shutdown()
     SDL_Quit();
     
     delete mainmenu;
-    delete g_levelB;
-    //delete g_effects;
+    delete levela;
+    delete levelb;
+    delete g_effects;
 }
 
 // ––––– DRIVER GAME LOOP ––––– //

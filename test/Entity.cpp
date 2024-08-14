@@ -130,6 +130,9 @@ Entity::Entity(GLuint texture_id, float speed, glm::vec3 acceleration, float jum
     if (EntityType == PLAYER) {
         face_up();
         set_walking(walking);
+
+        m_walk_sfx = Mix_LoadWAV("assets/win.wav");
+        Mix_VolumeChunk(m_walk_sfx, MIX_MAX_VOLUME / 4);
     }
 }
 
@@ -436,3 +439,8 @@ bool Entity::is_near(Entity* chest) {
     }
     return false;
 }
+
+void Entity::move_left() { m_movement.x = -1.0f; face_left(); }
+void Entity::move_right() { m_movement.x = 1.0f;  face_right(); }
+void Entity::move_up() { m_movement.y = 1.0f;  face_up(); }
+void Entity::move_down() { m_movement.y = -1.0f; face_down(); }

@@ -319,7 +319,9 @@ void render()
     else if (g_current_scene == levelb && g_foundlight) {
         g_current_scene->render(&g_shader_program);
 
-        Utility::draw_text(&g_shader_program, texture_id, "CONGRATS YOU TURNED THE LIGHTS ON!", 0.15f, 0.0f, glm::vec3(-1.0f, -1.0f, 0.0f));
+        Utility::draw_text(&g_shader_program, texture_id, "CONGRATS!", 0.15f, 0.0f, glm::vec3(2.0f, -3.0f, 0.0f));
+        Utility::draw_text(&g_shader_program, texture_id, "YOU TURNED", 0.15f, 0.0f, glm::vec3(2.0f, -3.2f, 0.0f));
+        Utility::draw_text(&g_shader_program, texture_id, " THE LIGHTS ON!", 0.15f, 0.0f, glm::vec3(2.0f, -3.4f, 0.0f));
     }
     else if (g_current_scene == levela) {
         g_current_scene->render(&g_shader_program_nolight);

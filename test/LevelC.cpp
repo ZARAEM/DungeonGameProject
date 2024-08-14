@@ -364,15 +364,21 @@ void LevelC::initialise() {
 
     m_game_state.bgm = Mix_LoadMUS(BGM_FILEPATH);
     Mix_PlayMusic(m_game_state.bgm, -1);
-    Mix_VolumeMusic(MIX_MAX_VOLUME / 2);
+    Mix_VolumeMusic(MIX_MAX_VOLUME / 10);
 
     m_game_state.coin_sfx = Mix_LoadWAV("assets/coin.wav");
+    m_game_state.walk_sfx = Mix_LoadWAV("assets/walk.wav");
 
-    Mix_VolumeChunk(m_game_state.coin_sfx, MIX_MAX_VOLUME / 4);
+    Mix_VolumeChunk(m_game_state.coin_sfx, MIX_MAX_VOLUME / 2);
+    Mix_VolumeChunk(m_game_state.walk_sfx, MIX_MAX_VOLUME / 32);
 }
 
 void LevelC::update(float delta_time)
 {
+    if (m_game_state.player->get_movement() != glm::vec3(0.0f, 0.0f, 0.0f)) {
+        Mix_PlayChannel(1, m_game_state.walk_sfx, 0);
+    }
+
     m_game_state.player->update(delta_time, m_game_state.player, m_game_state.enemies, 3, m_game_state.map);
 
     for (int i = 0; i < 32; i++) {

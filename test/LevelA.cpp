@@ -60,10 +60,7 @@ void LevelA::initialise()
 
     glm::vec3 acceleration = glm::vec3(0.0f, 0.0f, 0.0f);
 
-    m_game_state.walk_sfx = Mix_LoadWAV("assets/walk.wav");
-
     m_game_state.player = new Entity(player_texture_id, 1.0f, acceleration, 0.0f, player_walking_animation, 0.0f, 4, 0, 4, 4, 0.3f, 0.3f, PLAYER);
-    m_game_state.player->set_walk_sfx(m_game_state.walk_sfx);
     m_game_state.player->set_position(glm::vec3(5.0f, -2.0f, 0.0f));
     m_game_state.player->set_acceleration(glm::vec3(0.0f, 0.0f, 0.0f));
     m_game_state.player->set_speed(2.0f);
@@ -128,15 +125,20 @@ void LevelA::initialise()
 
     m_game_state.bgm = Mix_LoadMUS(BGM_FILEPATH);
     Mix_PlayMusic(m_game_state.bgm, -1);
-    Mix_VolumeMusic(MIX_MAX_VOLUME / 2);
+    Mix_VolumeMusic(MIX_MAX_VOLUME / 10);
 
     m_game_state.coin_sfx = Mix_LoadWAV("assets/coin.wav");
+    m_game_state.walk_sfx = Mix_LoadWAV("assets/walk.wav");
 
-    Mix_VolumeChunk(m_game_state.coin_sfx, MIX_MAX_VOLUME / 4);
+    Mix_VolumeChunk(m_game_state.coin_sfx, MIX_MAX_VOLUME / 2);
+    Mix_VolumeChunk(m_game_state.walk_sfx, MIX_MAX_VOLUME / 32);
 }
 
 void LevelA::update(float delta_time)
 {
+    if (m_game_state.player->get_movement() != glm::vec3(0.0f,0.0f,0.0f)) {
+        Mix_PlayChannel(1, m_game_state.walk_sfx, 0);
+    }
     m_game_state.player->update(delta_time, m_game_state.player, m_game_state.enemies, 3, m_game_state.map);
 
     for (int i = 0; i < 3; i++) {
@@ -154,7 +156,7 @@ void LevelA::update(float delta_time)
         if (m_game_state.player->check_collision(&m_game_state.crystals[i])) {
             m_game_state.crystals[i].deactivate();
 
-            Mix_PlayChannel(-1, m_game_state.coin_sfx, 0);
+            Mix_PlayChannel(2, m_game_state.coin_sfx, 0);
             m_game_state.count += 1;
         }
     }
@@ -188,6 +190,6 @@ void LevelA::render(ShaderProgram* program)
         }
     }
 
-    Utility::draw_text(program, texture_id, std::to_string(m_game_state.count) + "/4", 0.4f, 0.0f, glm::vec3(5.0f, -2.0f, 0.0f));
+    Utility::draw_text(program, texture_id, std::to_string(m_game_state.count) + "/4", 0.4f, 0.0f, glm::vec3(5.0f, -1.5f, 0.0f));
 
 }

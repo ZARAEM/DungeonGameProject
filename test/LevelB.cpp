@@ -92,7 +92,6 @@ void LevelB::initialise()
     m_game_state.walk_sfx = Mix_LoadWAV("assets/walk.wav");
 
     m_game_state.player = new Entity(player_texture_id, 1.0f, acceleration, 0.0f, player_walking_animation, 0.0f, 4, 0, 4, 4, 0.3f, 0.3f, PLAYER);
-    m_game_state.player->set_walk_sfx(m_game_state.walk_sfx);
     m_game_state.player->set_position(glm::vec3(1.0f, -1.0f, 0.0f));
     m_game_state.player->set_acceleration(glm::vec3(0.0f, 0.0f, 0.0f));
     m_game_state.player->set_speed(2.0f);
@@ -219,15 +218,20 @@ void LevelB::initialise()
 
     m_game_state.bgm = Mix_LoadMUS(BGM_FILEPATH);
     Mix_PlayMusic(m_game_state.bgm, -1);
-    Mix_VolumeMusic(MIX_MAX_VOLUME / 2);
+    Mix_VolumeMusic(MIX_MAX_VOLUME / 10);
 
     m_game_state.coin_sfx = Mix_LoadWAV("assets/coin.wav");
+    m_game_state.walk_sfx = Mix_LoadWAV("assets/walk.wav");
 
-    Mix_VolumeChunk(m_game_state.coin_sfx, MIX_MAX_VOLUME / 4);
+    Mix_VolumeChunk(m_game_state.coin_sfx, MIX_MAX_VOLUME / 2);
+    Mix_VolumeChunk(m_game_state.walk_sfx, MIX_MAX_VOLUME / 32);
 }
 
 void LevelB::update(float delta_time)
 {
+    if (m_game_state.player->get_movement() != glm::vec3(0.0f, 0.0f, 0.0f)) {
+        Mix_PlayChannel(1, m_game_state.walk_sfx, 0);
+    }
     m_game_state.player->update(delta_time, m_game_state.player, m_game_state.enemies, 5, m_game_state.map);
 
     m_game_state.player->update(0, m_game_state.player, m_game_state.chests, 2, m_game_state.map);
@@ -298,9 +302,14 @@ void LevelB::render(ShaderProgram* program)
         m_game_state.chests[i].render(program);
     }
 
-    Utility::draw_text(program, texture_id, "Press e near a chest to open, choose wisely!", 0.15f, 0.0f, glm::vec3(3.0f, -1.0f, 0.0f));
+    Utility::draw_text(program, texture_id, "Press e", 0.2f, 0.0f, glm::vec3(0.65f, -1.0f, 0.0f));
+    Utility::draw_text(program, texture_id, "near a", 0.2f, 0.0f, glm::vec3(0.65f, -1.2f, 0.0f));
+    Utility::draw_text(program, texture_id, "chest", 0.2f, 0.0f, glm::vec3(0.65f, -1.4f, 0.0f));
+    Utility::draw_text(program, texture_id, "to open.", 0.2f, 0.0f, glm::vec3(0.65f, -1.6f, 0.0f));
+    Utility::draw_text(program, texture_id, "CHOOSE", 0.2f, 0.0f, glm::vec3(0.65f, -1.8f, 0.0f));
+    Utility::draw_text(program, texture_id, "WISELY", 0.2f, 0.0f, glm::vec3(0.65f, -2.0f, 0.0f));
 
-    Utility::draw_text(program, texture_id, std::to_string(m_game_state.count) + "/10", 0.4f, 0.0f, glm::vec3(5.0f, -2.0f, 0.0f));
+    Utility::draw_text(program, texture_id, std::to_string(m_game_state.count) + "/10", 0.4f, 0.0f, glm::vec3(5.0f, -1.5f, 0.0f));
 }
 
 bool LevelB::near_chest_good() {

@@ -63,7 +63,7 @@ private:
     bool m_chest_opened = false;
 
     //audio
-    Mix_Chunk* m_walk_sfx = nullptr;
+    Mix_Chunk* m_walk_sfx;
 
 public:
     // ————— STATIC VARIABLES ————— //
@@ -103,10 +103,10 @@ public:
     void face_up() { m_animation_indices = m_walking[UP]; }
     void face_down() { m_animation_indices = m_walking[DOWN]; }
 
-    void move_left() { m_movement.x = -1.0f; face_left(); play_walk_sfx(); }
-    void move_right() { m_movement.x = 1.0f;  face_right(); play_walk_sfx(); }
-    void move_up() { m_movement.y = 1.0f;  face_up(); play_walk_sfx(); }
-    void move_down() { m_movement.y = -1.0f; face_down(); play_walk_sfx(); }
+    void move_left();
+    void move_right();
+    void move_up();
+    void move_down();
 
     bool opened_chest() { return m_chest_opened; }
 
@@ -155,7 +155,6 @@ public:
 
     bool is_near(Entity* chest);
 
-    // Setter for m_walking
     void set_walking(int walking[4][4])
     {
         for (int i = 0; i < 4; ++i)
@@ -164,14 +163,6 @@ public:
             {
                 m_walking[i][j] = walking[i][j];
             }
-        }
-    }
-
-    void set_walk_sfx(Mix_Chunk* walk_sfx) { m_walk_sfx = walk_sfx; }
-
-    void play_walk_sfx() {
-        if (m_walk_sfx) {
-            Mix_PlayChannel(-1, m_walk_sfx, 0);
         }
     }
 };

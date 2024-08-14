@@ -37,6 +37,8 @@
 #include "Effects.h"
 #include "Menu.h"
 #include "BetweenScreen.h"
+#include "Win.h"
+#include "Lose.h"
 
 // ––––– CONSTANTS ––––– //
 constexpr int WINDOW_WIDTH  = 640 * 2,
@@ -55,6 +57,9 @@ constexpr int VIEWPORT_X = 0,
 constexpr char V_SHADER_PATH[] = "shaders/vertex_textured.glsl",
            F_SHADER_PATH[] = "shaders/fragment_textured.glsl";
 
+constexpr char V_SHADER_PATH_NOLIGHT[] = "shaders/vertex_lit.glsl",
+           F_SHADER_PATH_NOLIGHT[] = "shaders/fragment_lit.glsl";
+
 constexpr float MILLISECONDS_IN_SECOND = 1000.0;
 
 enum AppStatus { RUNNING, TERMINATED };
@@ -65,19 +70,24 @@ Menu *mainmenu;
 LevelA* levela;
 BetweenScreen* betweenscreen;
 LevelB* levelb;
+Win* win;
+Lose* lose;
 
 Effects *g_effects;
-Scene   *g_levels[4];
+Scene   *g_levels[6];
 
 SDL_Window* g_display_window;
 
 ShaderProgram g_shader_program;
+ShaderProgram g_shader_program_nolight;
 glm::mat4 g_view_matrix, g_projection_matrix;
 
 float g_previous_ticks = 0.0f;
 float g_accumulator = 0.0f;
 
 bool g_is_colliding_bottom = false;
+
+bool g_foundlight = false;
 
 AppStatus g_app_status = RUNNING;
 
@@ -93,6 +103,18 @@ void switch_to_scene(Scene *scene)
 {    
     g_current_scene = scene;
     g_current_scene->initialise(); // DON'T FORGET THIS STEP!
+
+    if (scene == win) {
+        glUseProgram(g_shader_program.get_program_id());
+        g_current_scene = scene;
+        g_current_scene->initialise();
+    }
+
+    if (scene == lose) {
+        glUseProgram(g_shader_program.get_program_id());
+        g_current_scene = scene;
+        g_current_scene->initialise();
+    }
 }
 
 void initialise()
@@ -111,14 +133,18 @@ void initialise()
 #endif
     
     glViewport(VIEWPORT_X, VIEWPORT_Y, VIEWPORT_WIDTH, VIEWPORT_HEIGHT);
-    
+
     g_shader_program.load(V_SHADER_PATH, F_SHADER_PATH);
-    
+    g_shader_program_nolight.load(V_SHADER_PATH_NOLIGHT, F_SHADER_PATH_NOLIGHT);
+
     g_view_matrix = glm::mat4(1.0f);
     g_projection_matrix = glm::ortho(-5.0f, 5.0f, -3.75f, 3.75f, -1.0f, 1.0f);
-    
+
     g_shader_program.set_projection_matrix(g_projection_matrix);
     g_shader_program.set_view_matrix(g_view_matrix);
+
+    g_shader_program_nolight.set_projection_matrix(g_projection_matrix);
+    g_shader_program_nolight.set_view_matrix(g_view_matrix);
     
     glUseProgram(g_shader_program.get_program_id());
     
@@ -130,15 +156,19 @@ void initialise()
     mainmenu = new Menu();
     levela = new LevelA();
     levelb = new LevelB();
+    win = new Win();
+    lose = new Lose();
     
     g_levels[0] = mainmenu;
     g_levels[1] = levela;
     g_levels[2] = levelb;
     g_levels[3] = levelb;
+    g_levels[4] = lose;
+    g_levels[5] = win;
 
     Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
 
-    switch_to_scene(levela);
+    switch_to_scene(mainmenu);
 
     g_effects = new Effects(g_projection_matrix, g_view_matrix);
 }
@@ -171,6 +201,15 @@ void process_input()
                     break;
                 case SDLK_d:
                     break;
+                case SDLK_e:
+                    if (g_current_scene == levelb) {
+                        if (levelb->near_chest_bad()) {
+                            switch_to_scene(lose);
+                        }
+                        else if (levelb->near_chest_good()) {
+                            g_foundlight = true;
+                        }
+                    }
                 }
             default:
                 break;
@@ -179,9 +218,11 @@ void process_input()
     
     const Uint8 *key_state = SDL_GetKeyboardState(NULL);
 
-    if (g_current_scene == g_levels[0]) {
+    if (g_current_scene == mainmenu) {
         if (key_state[SDL_SCANCODE_RETURN]) {
+            glUseProgram(g_shader_program_nolight.get_program_id());
             switch_to_scene(levela);
+            g_effects->start(FADEIN, 1.0f);
         }
     }
     
@@ -236,20 +277,35 @@ void update()
         g_view_matrix = glm::translate(g_view_matrix, glm::vec3(-5, 3.75, 0));
     }
     g_view_matrix = glm::translate(g_view_matrix, g_effects->get_view_offset());
+
 }
 
 void render()
 {
     g_shader_program.set_view_matrix(g_view_matrix);
+    g_shader_program_nolight.set_view_matrix(g_view_matrix);
        
     glClear(GL_COLOR_BUFFER_BIT);
        
     // ————— RENDERING THE SCENE (i.e. map, character, enemies...) ————— //
-    g_current_scene->render(&g_shader_program);
+    if (g_current_scene == levelb && !g_foundlight) {
+        g_current_scene->render(&g_shader_program_nolight);
+    }
+    else if (g_current_scene == levelb && g_foundlight) {
+        g_current_scene->render(&g_shader_program);
+    }
+    else if (g_current_scene == levela) {
+        g_current_scene->render(&g_shader_program_nolight);
+    }
+    else {
+        g_current_scene->render(&g_shader_program);
+    }
        
     g_effects->render();
     
     SDL_GL_SwapWindow(g_display_window);
+
+    g_shader_program_nolight.set_light_position(g_current_scene->get_state().player->get_position());
 }
 
 void shutdown()
@@ -272,7 +328,7 @@ int main(int argc, char* argv[])
     {
         process_input();
         update();
-        
+
         if (g_current_scene->get_state().next_scene_id >= 0) {
             g_effects->start(FADEIN, 1.0f);
             switch_to_scene(g_levels[g_current_scene->get_state().next_scene_id]);

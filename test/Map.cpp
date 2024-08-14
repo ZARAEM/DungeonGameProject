@@ -105,9 +105,10 @@ bool Map::is_solid(glm::vec3 position, float *penetration_x, float *penetration_
     if (tile_x < 0 || tile_x >= m_width)  return false;
     if (tile_y < 0 || tile_y >= m_height) return false;
     
-    // If the tile index is 0 i.e. an open space, it is not solid
+    // If the tile index is 0 (or others/borders) i.e. an open space, it is not solid
     // add non solid here
     int tile = m_level_data[tile_y * m_width + tile_x];
+
     if (tile == 0 || tile == 7 || tile == 8 || tile == 9 || tile == 10 || tile == 40) return false;
     
     // And we likely have some overlap

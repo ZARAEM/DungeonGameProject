@@ -75,23 +75,26 @@ void LevelA::initialise()
     m_game_state.player = new Entity(player_texture_id, 1.0f, acceleration, 0.0f, player_walking_animation, 0.0f, 4, 0, 4, 4, 0.6f, 0.6f, PLAYER);
     m_game_state.player->set_position(glm::vec3(5.0f, -2.0f, 0.0f));
     m_game_state.player->set_acceleration(glm::vec3(0.0f, 0.0f, 0.0f));
-    m_game_state.player->set_speed(3.0f);
+    m_game_state.player->set_speed(2.0f);
 
     m_game_state.enemies = new Entity[ENEMY_COUNT];
 
     m_game_state.enemies[0] = Entity(slime_texture_id, 1.0f, acceleration, 0.0f, slime_walking_animation, 0.0f, 4, 0, 4, 4, 0.01f, 0.01f, ENEMY);
+    m_game_state.enemies[0].set_speed(1.5f);
     m_game_state.enemies[0].set_ai_type(WALKER);
     m_game_state.enemies[0].set_ai_state(WALKING);
-    m_game_state.enemies[0].set_position(glm::vec3(10.0f, -2.0f, 0.0f));
+    m_game_state.enemies[0].set_position(glm::vec3(10.0f, -1.0f, 0.0f));
     m_game_state.enemies[0].set_acceleration(glm::vec3(0.0f, 0.0f, 0.0f));
 
     m_game_state.enemies[1] = Entity(slime_texture_id, 1.0f, acceleration, 0.0f, slime_walking_animation, 0.0f, 4, 0, 4, 4, 0.01f, 0.01f, ENEMY);
-    m_game_state.enemies[1].set_ai_type(WALKER);
+    m_game_state.enemies[1].set_speed(1.2f);
+    m_game_state.enemies[1].set_ai_type(GUARD);
     m_game_state.enemies[1].set_ai_state(WALKING);
-    m_game_state.enemies[1].set_position(glm::vec3(15.0f, -2.0f, 0.0f));
+    m_game_state.enemies[1].set_position(glm::vec3(15.0f, -3.0f, 0.0f));
     m_game_state.enemies[1].set_acceleration(glm::vec3(0.0f, 0.0f, 0.0f));
 
     m_game_state.enemies[2] = Entity(slime_texture_id, 1.0f, acceleration, 0.0f, slime_walking_animation, 0.0f, 4, 0, 4, 4, 0.01f, 0.01f, ENEMY);
+    m_game_state.enemies[2].set_speed(1.5f);
     m_game_state.enemies[2].set_ai_type(WALKER);
     m_game_state.enemies[2].set_ai_state(WALKING);
     m_game_state.enemies[2].set_position(glm::vec3(20.0f, -2.0f, 0.0f));
@@ -120,13 +123,13 @@ void LevelA::update(float delta_time)
     glm::vec3 player_position = m_game_state.player->get_position();
 
     if (m_game_state.player->get_position().x >= 25.0f) {
-        m_game_state.next_scene_id = 2;
+        //change to 2
+        m_game_state.next_scene_id = 3;
     }
 }
 
 void LevelA::render(ShaderProgram* program)
 {
-
     m_game_state.map->render(program);
 
     m_game_state.player->render(program);

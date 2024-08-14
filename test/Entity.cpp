@@ -63,22 +63,23 @@ void Entity::ai_guard(Entity* player)
     case WALKING:
         if (glm::distance(m_position, player->get_position()) < range) {
             if (m_position.x > player->get_position().x) {
-                m_movement.x = -0.5f;
+                move_left();
             }
             else {
-                m_movement.x = 0.5f;
+                move_right();
             }
 
             if (m_position.y > player->get_position().y) {
-                m_movement.y = -0.5f;
+                move_down();
             }
             else {
-                m_movement.y = 0.5f;
+                move_up();
             }
         }
         else {
             m_ai_state = IDLE;
             m_movement = glm::vec3(0.0f, 0.0f, 0.0f);
+            face_right();
         }
         break;
 
@@ -119,6 +120,11 @@ Entity::Entity(GLuint texture_id, float speed, glm::vec3 acceleration, float jum
     }
 
     if (EntityType == CHEST) {
+        face_up();
+        set_walking(walking);
+    }
+
+    if (EntityType == PLAYER) {
         face_up();
         set_walking(walking);
     }
@@ -399,6 +405,7 @@ void Entity::render(ShaderProgram* program)
     }
 
     float vertices[] = { -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5 };
+    
     float tex_coords[] = { 0.0,  1.0, 1.0,  1.0, 1.0, 0.0,  0.0,  1.0, 1.0, 0.0,  0.0, 0.0 };
 
     glBindTexture(GL_TEXTURE_2D, m_texture_id);
@@ -412,4 +419,12 @@ void Entity::render(ShaderProgram* program)
 
     glDisableVertexAttribArray(program->get_position_attribute());
     glDisableVertexAttribArray(program->get_tex_coordinate_attribute());
+}
+
+bool Entity::is_near(Entity* chest) {
+    float distance = glm::distance(m_position, chest->m_position);
+    if (distance < 1.0f) {
+        return true;
+    }
+    return false;
 }

@@ -137,12 +137,14 @@
     <ClCompile Include="helper.cpp" />
     <ClCompile Include="LevelA.cpp" />
     <ClCompile Include="LevelB.cpp" />
+    <ClCompile Include="Lose.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Map.cpp" />
     <ClCompile Include="Menu.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="ShaderProgram.cpp" />
     <ClCompile Include="Utility.cpp" />
+    <ClCompile Include="Win.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BetweenScreen.h" />
@@ -150,11 +152,13 @@
     <ClInclude Include="Entity.h" />
     <ClInclude Include="LevelA.h" />
     <ClInclude Include="LevelB.h" />
+    <ClInclude Include="Lose.h" />
     <ClInclude Include="Map.h" />
     <ClInclude Include="Menu.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="ShaderProgram.h" />
     <ClInclude Include="Utility.h" />
+    <ClInclude Include="Win.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

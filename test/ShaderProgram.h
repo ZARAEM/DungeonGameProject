@@ -46,4 +46,8 @@ public:
     GLuint const get_tex_coordinate_attribute() const { return m_tex_coord_attribute; };
     
     void set_program_id(GLuint program_id)                         { m_program_id = program_id;                   };
+
+    void set_light_position(glm::vec3 position);
+
+    GLuint m_light_position_uniform;
 };

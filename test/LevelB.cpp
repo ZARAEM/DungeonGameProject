@@ -71,48 +71,51 @@ void LevelB::initialise()
         { 12, 13, 14, 15 } // down
     };
 
-    int chest_animation[4][4] =
-    {
-        { 0, 1, 2, 3 }, // left
-        { 0, 1, 2, 3 }, // right
-        { 0, 1, 2, 3 }, // up
-        { 0, 1, 2, 3 } // down
-    };
+    //int chest_animation[4][4] =
+    //{
+    //    { 1,1,1,1 }, // left
+    //    { 1,1,1,1 }, // right
+    //    { 1,1,1,1 }, // up
+    //    { 1,1,1,1 } // down
+    //};
 
     glm::vec3 acceleration = glm::vec3(0.0f, 0.0f, 0.0f);
 
     m_game_state.player = new Entity(player_texture_id, 1.0f, acceleration, 0.0f, player_walking_animation, 0.0f, 4, 0, 4, 4, 1.0f, 1.0f, PLAYER);
-    m_game_state.player->set_position(glm::vec3(5.0f, -2.0f, 0.0f));
+    m_game_state.player->set_position(glm::vec3(1.0f, -3.0f, 0.0f));
     m_game_state.player->set_acceleration(glm::vec3(0.0f, 0.0f, 0.0f));
     m_game_state.player->set_speed(3.0f);
 
     m_game_state.enemies = new Entity[ENEMY_COUNT];
 
-    m_game_state.enemies[0] = Entity(slime_texture_id, 1.0f, acceleration, 0.0f, slime_walking_animation, 0.0f, 4, 0, 4, 4, 0.6f, 0.6f, ENEMY);
+    m_game_state.enemies[0] = Entity(slime_texture_id, 1.0f, acceleration, 0.0f, slime_walking_animation, 0.0f, 4, 0, 4, 4, 0.01f, 0.01f, ENEMY);
+    m_game_state.enemies[0].set_speed(1.5f);
     m_game_state.enemies[0].set_ai_type(WALKER);
     m_game_state.enemies[0].set_ai_state(WALKING);
-    m_game_state.enemies[0].set_position(glm::vec3(10.0f, -2.0f, 0.0f));
+    m_game_state.enemies[0].set_position(glm::vec3(10.0f, -3.0f, 0.0f));
     m_game_state.enemies[0].set_acceleration(glm::vec3(0.0f, 0.0f, 0.0f));
 
-    m_game_state.enemies[1] = Entity(slime_texture_id, 1.0f, acceleration, 0.0f, slime_walking_animation, 0.0f, 4, 0, 4, 4, 0.6f, 0.6f, ENEMY);
-    m_game_state.enemies[1].set_ai_type(WALKER);
+    m_game_state.enemies[1] = Entity(slime_texture_id, 1.0f, acceleration, 0.0f, slime_walking_animation, 0.0f, 4, 0, 4, 4, 0.01f, 0.01f, ENEMY);
+    m_game_state.enemies[0].set_speed(1.2f);
+    m_game_state.enemies[1].set_ai_type(GUARD);
     m_game_state.enemies[1].set_ai_state(WALKING);
-    m_game_state.enemies[1].set_position(glm::vec3(15.0f, -2.0f, 0.0f));
+    m_game_state.enemies[1].set_position(glm::vec3(15.0f, -1.0f, 0.0f));
     m_game_state.enemies[1].set_acceleration(glm::vec3(0.0f, 0.0f, 0.0f));
 
-    m_game_state.enemies[2] = Entity(slime_texture_id, 1.0f, acceleration, 0.0f, slime_walking_animation, 0.0f, 4, 0, 4, 4, 0.6f, 0.6f, ENEMY);
-    m_game_state.enemies[2].set_ai_type(WALKER);
+    m_game_state.enemies[2] = Entity(slime_texture_id, 1.0f, acceleration, 0.0f, slime_walking_animation, 0.0f, 4, 0, 4, 4, 0.01f, 0.01f, ENEMY);
+    m_game_state.enemies[0].set_speed(1.3f);
+    m_game_state.enemies[2].set_ai_type(GUARD);
     m_game_state.enemies[2].set_ai_state(WALKING);
     m_game_state.enemies[2].set_position(glm::vec3(20.0f, -2.0f, 0.0f));
     m_game_state.enemies[2].set_acceleration(glm::vec3(0.0f, 0.0f, 0.0f));
 
-    m_game_state.enemies[3] = Entity(chest_texture_id, 1.0f, acceleration, 0.0f, chest_animation, 0.0f, 4, 0, 4, 1, 0.1f, 0.1f, CHEST);
+    m_game_state.enemies[3] = Entity(chest_texture_id, 0.0f, 0.3f, 0.3f, CHEST);
     m_game_state.enemies[3].set_ai_type(CHESTAI);
     m_game_state.enemies[3].set_ai_state(IDLE);
     m_game_state.enemies[3].set_position(glm::vec3(6.0f, -2.0f, 0.0f));
     m_game_state.enemies[3].set_acceleration(glm::vec3(0.0f, 0.0f, 0.0f));
 
-    m_game_state.enemies[4] = Entity(chest_texture_id, 1.0f, acceleration, 0.0f, chest_animation, 0.0f, 4, 0, 4, 1, 0.1f, 0.1f, CHEST);
+    m_game_state.enemies[4] = Entity(chest_texture_id, 0.0f, 0.3f, 0.3f, CHEST);
     m_game_state.enemies[4].set_ai_type(CHESTAI);
     m_game_state.enemies[4].set_ai_state(IDLE);
     m_game_state.enemies[4].set_position(glm::vec3(6.0f, -4.0f, 0.0f));
@@ -143,10 +146,19 @@ void LevelB::update(float delta_time)
     if (m_game_state.player->get_position().x >= 25.0f) {
         m_game_state.next_scene_id = 2;
     }
+
+    if (near_chest_bad()) {
+        BAD_CHEST = true;
+    }
+
+    if (near_chest_good()) {
+        GOOD_CHEST = true;
+    }
 }
 
 void LevelB::render(ShaderProgram* program)
 {
+    GLuint texture_id = Utility::load_texture("assets/font1.png");
 
     m_game_state.map->render(program);
 
@@ -155,4 +167,20 @@ void LevelB::render(ShaderProgram* program)
     for (int i = 0; i < ENEMY_COUNT; i++) {
         m_game_state.enemies[i].render(program);
     }
+
+    Utility::draw_text(program, texture_id, "Press e near a chest to open, choose wisely!", 0.15f, 0.0f, glm::vec3(3.0f, -1.0f, 0.0f));
+}
+
+bool LevelB::near_chest_good() {
+    if (m_game_state.player->is_near(&m_game_state.enemies[3])) {
+        return true;
+    }
+    return false;
+}
+
+bool LevelB::near_chest_bad() {
+    if (m_game_state.player->is_near(&m_game_state.enemies[4])) {
+        return true;
+    }
+    return false;
 }

@@ -56,6 +56,8 @@ private:
     bool m_collided_left = false;
     bool m_collided_right = false;
 
+    bool m_chest_opened = false;
+
 public:
     // ————— STATIC VARIABLES ————— //
     static constexpr int SECONDS_PER_FRAME = 4;
@@ -98,6 +100,8 @@ public:
     void move_up() { m_movement.y = 1.0f;  face_up(); }
     void move_down() { m_movement.y = -1.0f; face_down(); }
 
+    bool opened_chest() { return m_chest_opened; }
+
     void const jump() { m_is_jumping = true; }
 
     // ————— GETTERS ————— //
@@ -138,6 +142,8 @@ public:
     void const set_jumping_power(float new_jumping_power) { m_jumping_power = new_jumping_power; }
     void const set_width(float new_width) { m_width = new_width; }
     void const set_height(float new_height) { m_height = new_height; }
+
+    bool is_near(Entity* chest);
 
     // Setter for m_walking
     void set_walking(int walking[4][4])

@@ -4,9 +4,11 @@
 #include "Map.h"
 #include "glm/glm.hpp"
 #include "ShaderProgram.h"
-enum EntityType { PLATFORM, PLAYER, ENEMY, CHEST };
+#include <SDL_mixer.h>
+
+enum EntityType { PLATFORM, PLAYER, ENEMY, CHEST, CRYSTAL };
 enum AIType { WALKER, GUARD, CHESTAI };
-enum AIState { WALKING, IDLE, ATTACKING };
+enum AIState { WALKING, IDLE, CHASING};
 
 enum AnimationDirection { LEFT, RIGHT, UP, DOWN };
 
@@ -16,6 +18,8 @@ private:
     bool m_is_active = true;
 
     int m_walking[4][4]; // 4x4 array for walking animations
+
+    int m_attacking[4][4];
 
     EntityType m_entity_type;
     AIType     m_ai_type;
@@ -58,6 +62,9 @@ private:
 
     bool m_chest_opened = false;
 
+    //audio
+    Mix_Chunk* m_walk_sfx = nullptr;
+
 public:
     // ————— STATIC VARIABLES ————— //
     static constexpr int SECONDS_PER_FRAME = 4;
@@ -82,6 +89,7 @@ public:
     void const check_collision_x(Map* map);
 
     void update(float delta_time, Entity* player, Entity* collidable_entities, int collidable_entity_count, Map* map);
+
     void render(ShaderProgram* program);
 
     void ai_activate(Entity* player);
@@ -95,10 +103,10 @@ public:
     void face_up() { m_animation_indices = m_walking[UP]; }
     void face_down() { m_animation_indices = m_walking[DOWN]; }
 
-    void move_left() { m_movement.x = -1.0f; face_left(); }
-    void move_right() { m_movement.x = 1.0f;  face_right(); }
-    void move_up() { m_movement.y = 1.0f;  face_up(); }
-    void move_down() { m_movement.y = -1.0f; face_down(); }
+    void move_left() { m_movement.x = -1.0f; face_left(); play_walk_sfx(); }
+    void move_right() { m_movement.x = 1.0f;  face_right(); play_walk_sfx(); }
+    void move_up() { m_movement.y = 1.0f;  face_up(); play_walk_sfx(); }
+    void move_down() { m_movement.y = -1.0f; face_down(); play_walk_sfx(); }
 
     bool opened_chest() { return m_chest_opened; }
 
@@ -120,9 +128,11 @@ public:
     bool      const get_collided_bottom() const { return m_collided_bottom; }
     bool      const get_collided_right() const { return m_collided_right; }
     bool      const get_collided_left() const { return m_collided_left; }
+    bool      const get_active() const { return m_is_active; }
 
     void activate() { m_is_active = true; };
     void deactivate() { m_is_active = false; };
+
     // ————— SETTERS ————— //
     void const set_entity_type(EntityType new_entity_type) { m_entity_type = new_entity_type; };
     void const set_ai_type(AIType new_ai_type) { m_ai_type = new_ai_type; };
@@ -156,6 +166,13 @@ public:
             }
         }
     }
-};
 
+    void set_walk_sfx(Mix_Chunk* walk_sfx) { m_walk_sfx = walk_sfx; }
+
+    void play_walk_sfx() {
+        if (m_walk_sfx) {
+            Mix_PlayChannel(-1, m_walk_sfx, 0);
+        }
+    }
+};
 #endif // ENTITY_H

@@ -8,6 +8,14 @@ void Lose::initialise() {
 	m_game_state.player = new Entity();
 
 	m_game_state.enemies = new Entity();
+
+	Mix_HaltMusic();
+
+	lose_sfx = Mix_LoadWAV("assets/death.wav");
+
+	Mix_VolumeChunk(lose_sfx, MIX_MAX_VOLUME / 4);
+
+	Mix_PlayChannel(-1, lose_sfx, 0);
 }
 
 void Lose::update(float delta_time) {}

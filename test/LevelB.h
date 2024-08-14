@@ -1,9 +1,6 @@
 #include "Scene.h"
 
 class LevelB : public Scene {
-private:
-    int ENEMY_COUNT = 5;
-    int CHEST_COUNT = 1;
     bool GOOD_CHEST = false;
     bool BAD_CHEST = false;
 public:

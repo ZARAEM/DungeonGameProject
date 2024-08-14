@@ -25,22 +25,25 @@ struct GameState
     Map *map;
     Entity *player;
     Entity *enemies;
+    Entity* chests;
+    Entity *crystals;
     
     // ————— AUDIO ————— //
     Mix_Music *bgm;
-    Mix_Chunk *jump_sfx;
+    Mix_Chunk *walk_sfx;
+    Mix_Chunk *coin_sfx;
     
     // ————— POINTERS TO OTHER SCENES ————— //
     int next_scene_id;
+    int count;
 };
 
 class Scene {
 protected:
     GameState m_game_state;
-    
 public:
     // ————— ATTRIBUTES ————— //
-    int m_number_of_enemies = 1;
+    int m_number_of_enemies;
     
     // ————— METHODS ————— //
     virtual void initialise() = 0;

@@ -8,12 +8,21 @@
 * Academic Misconduct.
 **/
 
+// All assets from itch.io
+
 #define GL_SILENCE_DEPRECATION
 #define GL_GLEXT_PROTOTYPES 1
 #define FIXED_TIMESTEP 0.0166666f
 #define LEVEL1_WIDTH 14
 #define LEVEL1_HEIGHT 8
 #define LEVEL1_LEFT_EDGE 5.0f
+
+constexpr int PLAY_ONCE = 0,
+NEXT_CHNL = -1,
+MUTE_VOL = 0,
+MILS_IN_SEC = 1000,
+ALL_SFX_CHN = -1;
+
 
 #ifdef _WINDOWS
 #include <GL/glew.h>
@@ -34,6 +43,7 @@
 #include "Scene.h"
 #include "LevelA.h"
 #include "LevelB.h"
+#include "LevelC.h"
 #include "Effects.h"
 #include "Menu.h"
 #include "BetweenScreen.h"
@@ -68,8 +78,8 @@ enum AppStatus { RUNNING, TERMINATED };
 Scene  *g_current_scene;
 Menu *mainmenu;
 LevelA* levela;
-BetweenScreen* betweenscreen;
 LevelB* levelb;
+LevelC* levelc;
 Win* win;
 Lose* lose;
 
@@ -156,21 +166,24 @@ void initialise()
     mainmenu = new Menu();
     levela = new LevelA();
     levelb = new LevelB();
+    levelc = new LevelC();
     win = new Win();
     lose = new Lose();
     
     g_levels[0] = mainmenu;
     g_levels[1] = levela;
     g_levels[2] = levelb;
-    g_levels[3] = levelb;
+    g_levels[3] = levelc;
     g_levels[4] = lose;
     g_levels[5] = win;
 
     Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
 
-    switch_to_scene(mainmenu);
+    switch_to_scene(levelc);
 
     g_effects = new Effects(g_projection_matrix, g_view_matrix);
+
+    Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
 }
 
 void process_input()
@@ -226,25 +239,32 @@ void process_input()
         }
     }
     
-    if (g_current_scene == levela || g_current_scene == levelb) {
+    if (g_current_scene == levela || g_current_scene == levelb || g_current_scene == levelc) {
+        //Mix_Chunk* walk_sfx = Mix_LoadWAV("assets/walk.wav");
+        //Mix_VolumeChunk(walk_sfx, MIX_MAX_VOLUME / 4);
+
         if (key_state[SDL_SCANCODE_W]) {
             g_current_scene->get_state().player->move_up();
+            //Mix_PlayChannel(-1, walk_sfx, 0);
         }
         else if (key_state[SDL_SCANCODE_A]) {
             g_current_scene->get_state().player->move_left();
+            //Mix_PlayChannel(-1, walk_sfx, 0);
         }
         else if (key_state[SDL_SCANCODE_S]) {
             g_current_scene->get_state().player->move_down();
+            //Mix_PlayChannel(-1, walk_sfx, 0);
         }
         else if (key_state[SDL_SCANCODE_D]) {
             g_current_scene->get_state().player->move_right();
+            //Mix_PlayChannel(-1, walk_sfx, 0);
         }
     }
 }
 
 void update()
 {
-    float ticks = (float)SDL_GetTicks() / MILLISECONDS_IN_SECOND;
+    float ticks = (float)SDL_GetTicks() / MILLISECONDS_IN_SECOND; 
     float delta_time = ticks - g_previous_ticks;
     g_previous_ticks = ticks;
     
@@ -282,6 +302,11 @@ void update()
 
 void render()
 {
+
+    GLuint texture_id = Utility::load_texture("assets/font1.png");
+
+    g_shader_program_nolight.set_light_position(g_current_scene->get_state().player->get_position());
+
     g_shader_program.set_view_matrix(g_view_matrix);
     g_shader_program_nolight.set_view_matrix(g_view_matrix);
        
@@ -293,6 +318,8 @@ void render()
     }
     else if (g_current_scene == levelb && g_foundlight) {
         g_current_scene->render(&g_shader_program);
+
+        Utility::draw_text(&g_shader_program, texture_id, "CONGRATS YOU TURNED THE LIGHTS ON!", 0.15f, 0.0f, glm::vec3(-1.0f, -1.0f, 0.0f));
     }
     else if (g_current_scene == levela) {
         g_current_scene->render(&g_shader_program_nolight);
@@ -304,8 +331,6 @@ void render()
     g_effects->render();
     
     SDL_GL_SwapWindow(g_display_window);
-
-    g_shader_program_nolight.set_light_position(g_current_scene->get_state().player->get_position());
 }
 
 void shutdown()
@@ -314,9 +339,11 @@ void shutdown()
     
     delete mainmenu;
     delete levela;
-    delete betweenscreen;
     delete levelb;
+    delete levelc;
     delete g_effects;
+    delete lose;
+    delete win;
 }
 
 // ––––– DRIVER GAME LOOP ––––– //

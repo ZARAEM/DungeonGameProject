@@ -53,6 +53,9 @@ void Entity::ai_walk()
 
 void Entity::ai_guard(Entity* player)
 {
+
+    face_right();
+
     float range = 3.0f;
 
     switch (m_ai_state) {
@@ -61,7 +64,12 @@ void Entity::ai_guard(Entity* player)
         break;
 
     case WALKING:
-        if (glm::distance(m_position, player->get_position()) < range) {
+        if (glm::distance(m_position, player->get_position()) > range) {
+            m_ai_state = IDLE;
+            m_movement = glm::vec3(0.0f, 0.0f, 0.0f);
+            face_right();
+        }
+        else {
             if (m_position.x > player->get_position().x) {
                 move_left();
             }
@@ -76,14 +84,9 @@ void Entity::ai_guard(Entity* player)
                 move_up();
             }
         }
-        else {
-            m_ai_state = IDLE;
-            m_movement = glm::vec3(0.0f, 0.0f, 0.0f);
-            face_right();
-        }
         break;
 
-    case ATTACKING:
+    case CHASING:
         break;
 
     default:
@@ -193,71 +196,74 @@ void Entity::draw_sprite_from_texture_atlas(ShaderProgram* program, GLuint textu
 
 bool const Entity::check_collision(Entity* other) const
 {
-    float x_distance = fabs(m_position.x - other->m_position.x) - ((m_width + other->m_width) / 2.0f);
-    float y_distance = fabs(m_position.y - other->m_position.y) - ((m_height + other->m_height) / 2.0f);
+    if (other->get_active()) {
+        float x_distance = fabs(m_position.x - other->m_position.x) - ((m_width + other->m_width) / 2.0f);
+        float y_distance = fabs(m_position.y - other->m_position.y) - ((m_height + other->m_height) / 2.0f);
 
-    return x_distance < 0.0f && y_distance < 0.0f;
+        return x_distance < 0.0f && y_distance < 0.0f;
+    }
+    return false;
 }
 
 void const Entity::check_collision_y(Entity* collidable_entities, int collidable_entity_count)
 {
-    for (int i = 0; i < collidable_entity_count; i++)
-    {
-        Entity* collidable_entity = &collidable_entities[i];
-
-        if (check_collision(collidable_entity))
+        for (int i = 0; i < collidable_entity_count; i++)
         {
-            float y_distance = fabs(m_position.y - collidable_entity->m_position.y);
-            float y_overlap = fabs(y_distance - (m_height / 2.0f) - (collidable_entity->m_height / 2.0f));
-            if (m_velocity.y > 0)
-            {
-                m_position.y -= y_overlap;
-                m_velocity.y = 0;
+            Entity* collidable_entity = &collidable_entities[i];
 
-                // Collision!
-                m_collided_top = true;
-            }
-            else if (m_velocity.y < 0)
+            if (check_collision(collidable_entity))
             {
-                m_position.y += y_overlap;
-                m_velocity.y = 0;
+                float y_distance = fabs(m_position.y - collidable_entity->m_position.y);
+                float y_overlap = fabs(y_distance - (m_height / 2.0f) - (collidable_entity->m_height / 2.0f));
+                if (m_velocity.y > 0)
+                {
+                    m_position.y -= y_overlap;
+                    m_velocity.y = 0;
 
-                // Collision!
-                m_collided_bottom = true;
+                    // Collision!
+                    m_collided_top = true;
+                }
+                else if (m_velocity.y < 0)
+                {
+                    m_position.y += y_overlap;
+                    m_velocity.y = 0;
+
+                    // Collision!
+                    m_collided_bottom = true;
+                }
             }
         }
-    }
 }
 
 void const Entity::check_collision_x(Entity* collidable_entities, int collidable_entity_count)
 {
-    for (int i = 0; i < collidable_entity_count; i++)
-    {
-        Entity* collidable_entity = &collidable_entities[i];
-
-        if (check_collision(collidable_entity))
+        for (int i = 0; i < collidable_entity_count; i++)
         {
-            float x_distance = fabs(m_position.x - collidable_entity->m_position.x);
-            float x_overlap = fabs(x_distance - (m_width / 2.0f) - (collidable_entity->m_width / 2.0f));
-            if (m_velocity.x > 0)
+            Entity* collidable_entity = &collidable_entities[i];
+
+            if (check_collision(collidable_entity))
             {
-                m_position.x -= x_overlap;
-                m_velocity.x = 0;
+                float x_distance = fabs(m_position.x - collidable_entity->m_position.x);
+                float x_overlap = fabs(x_distance - (m_width / 2.0f) - (collidable_entity->m_width / 2.0f));
+                if (m_velocity.x > 0)
+                {
+                    m_position.x -= x_overlap;
+                    m_velocity.x = 0;
 
-                // Collision!
-                m_collided_right = true;
+                    // Collision!
+                    m_collided_right = true;
 
-            }
-            else if (m_velocity.x < 0)
-            {
-                m_position.x += x_overlap;
-                m_velocity.x = 0;
+                }
+                else if (m_velocity.x < 0)
+                {
+                    m_position.x += x_overlap;
+                    m_velocity.x = 0;
 
-                // Collision!
-                m_collided_left = true;
+                    // Collision!
+                    m_collided_left = true;
+                }
             }
         }
-    }
 }
 
 void const Entity::check_collision_y(Map* map)
@@ -339,16 +345,16 @@ void const Entity::check_collision_x(Map* map)
         m_collided_right = true;
     }
 }
+
 void Entity::update(float delta_time, Entity* player, Entity* collidable_entities, int collidable_entity_count, Map* map)
 {
+
     if (!m_is_active) return;
 
     m_collided_top = false;
     m_collided_bottom = false;
     m_collided_left = false;
     m_collided_right = false;
-
-    if (m_entity_type == ENEMY) ai_activate(player);
 
     if (m_animation_indices != NULL)
     {
@@ -370,25 +376,27 @@ void Entity::update(float delta_time, Entity* player, Entity* collidable_entitie
         }
     }
 
+    if (m_entity_type == ENEMY) ai_activate(player);
+
     m_velocity.x = m_movement.x * m_speed;
     m_velocity.y = m_movement.y * m_speed;
     m_velocity += m_acceleration * delta_time;
 
-    if (m_is_jumping)
-    {
-        m_is_jumping = false;
-        m_velocity.y += m_jumping_power;
-    }
+    //if (m_is_jumping)
+    //{
+    //    m_is_jumping = false;
+    //    m_velocity.y += m_jumping_power;
+    //}
+
+    check_collision_x(collidable_entities, collidable_entity_count);
+    check_collision_x(map);
 
     check_collision_y(collidable_entities, collidable_entity_count);
     check_collision_y(map);
 
     m_position.x += m_velocity.x * delta_time;
     m_position.y += m_velocity.y * delta_time;
-
-    check_collision_x(collidable_entities, collidable_entity_count);
-    check_collision_x(map);
-
+   
     m_model_matrix = glm::mat4(1.0f);
     m_model_matrix = glm::translate(m_model_matrix, m_position);
 }

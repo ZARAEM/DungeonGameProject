@@ -1,10 +1,7 @@
 #include "Scene.h"
 
 class LevelA : public Scene {
-private:
-    int ENEMY_COUNT = 3;
 public:
-    
     ~LevelA();
     
     void initialise() override;

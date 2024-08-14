@@ -8,6 +8,14 @@ void Win::initialise() {
 	m_game_state.player = new Entity();
 
 	m_game_state.enemies = new Entity();
+
+	Mix_HaltMusic();
+
+	win_sfx = Mix_LoadWAV("assets/win.wav");
+
+	Mix_VolumeChunk(win_sfx, MIX_MAX_VOLUME / 4);
+
+	Mix_PlayChannel(-1, win_sfx, 0);
 }
 
 void Win::update(float delta_time) {}

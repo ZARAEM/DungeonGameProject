@@ -179,7 +179,7 @@ void initialise()
 
     Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
 
-    switch_to_scene(levelc);
+    switch_to_scene(mainmenu);
 
     g_effects = new Effects(g_projection_matrix, g_view_matrix);
 
